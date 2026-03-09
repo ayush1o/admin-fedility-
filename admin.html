@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Fidelity Admin</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+
+*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins}
+body{background:#f3f6fb}
+
+/* LOGIN */
+.login{height:100vh;display:flex;justify-content:center;align-items:center}
+.loginBox{background:white;padding:30px;border-radius:10px;width:320px;box-shadow:0 5px 20px rgba(0,0,0,.1)}
+.loginBox input{width:100%;padding:10px;margin-bottom:10px;border:1px solid #ddd;border-radius:6px}
+.loginBox button{width:100%;padding:10px;background:#16a34a;border:none;color:white;border-radius:6px;cursor:pointer}
+
+/* ADMIN */
+.admin{display:none}
+
+.sidebar{
+width:230px;background:#0f172a;color:white;height:100vh;position:fixed;padding:20px
+}
+
+.logo{
+font-size:22px;color:#22c55e;margin-bottom:25px
+}
+
+.menu button{
+display:block;width:100%;background:none;border:none;color:#cbd5e1;padding:10px;margin-bottom:6px;text-align:left;border-radius:6px;cursor:pointer
+}
+
+.menu button:hover{background:#22c55e;color:white}
+
+.main{margin-left:230px;padding:30px}
+
+.card{
+background:white;padding:20px;border-radius:10px;margin-bottom:20px;box-shadow:0 5px 20px rgba(0,0,0,.05)
+}
+
+.topbar{
+background:linear-gradient(90deg,#16a34a,#22c55e);padding:15px;color:white;border-radius:10px;margin-bottom:20px
+}
+
+table{width:100%;border-collapse:collapse;margin-top:10px}
+
+th,td{
+padding:10px;border-bottom:1px solid #eee;font-size:13px
+}
+
+th{background:#f8fafc}
+
+.btn{
+padding:5px 8px;border:none;border-radius:5px;color:white;font-size:12px;cursor:pointer;margin:2px
+}
+
+.green{background:#16a34a}
+.blue{background:#2563eb}
+.orange{background:#f97316}
+.red{background:#ef4444}
+.purple{background:#9333ea}
+.gray{background:#64748b}
+
+.status{
+padding:4px 8px;border-radius:12px;font-size:11px
+}
+
+.online{background:#dcfce7;color:#16a34a}
+.offline{background:#e5e7eb;color:#374151}
+
+.modal{
+display:none;position:fixed;top:0;left:0;width:100%;height:100%;
+background:rgba(0,0,0,.4);justify-content:center;align-items:center
+}
+
+.modalBox{
+background:white;padding:25px;width:450px;border-radius:10px
+}
+
+.modalBox input,.modalBox select,.modalBox textarea{
+width:100%;padding:8px;margin-bottom:10px;border:1px solid #ddd;border-radius:6px
+}
+
+.searchBar{
+display:flex;gap:10px;margin-top:10px
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div class="login" id="loginPage">
+<div class="loginBox">
+<h3> Admin Login Fidelity</h3>
+<input id="user" placeholder="Username">
+<input id="pass" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+</div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="admin" id="adminPanel">
+
+<div class="sidebar">
+<div class="logo">Fidelity</div>
+
+<div class="menu">
+<button onclick="openPage('members')">Members</button>
+<button onclick="logout()">Logout</button>
+</div>
+</div>
+
+<div class="main">
+
+<div class="topbar">Admin Dashboard</div>
+
+<div id="members" class="page">
+
+<div class="card">
+
+<h3>Members</h3>
+
+<div class="searchBar">
+<input id="searchInput" placeholder="Search Username / ID" oninput="searchUsers()">
+<button class="btn blue" onclick="searchUsers()">Search</button>
+<button class="btn gray" onclick="resetSearch()">Reset</button>
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+<th>ID</th>
+<th>Name</th>
+<th>Balance</th>
+<th>Total Withdraw</th>
+<th>Real Deposit</th>
+<th>Help Deposit</th>
+<th>Status</th>
+<th>Credit</th>
+<th>Actions</th>
+</tr>
+
+</thead>
+
+<tbody id="memberTable"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+<!-- ACTION MODAL -->
+
+<!-- INJECT FORM MODAL -->
+<div class="modal" id="injectModal">
+<div class="modalBox">
+
+<h3>Add Injection</h3>
+
+<input type="date" id="injDate">
+
+<input type="text" placeholder="Order ID" id="orderId">
+
+<select id="product" onchange="calculateInjection()">
+
+<option value="2500">RELIANCE ₹2500</option>
+
+<option value="3800">TCS ₹3800</option>
+
+<option value="1500">INFY ₹1500</option>
+
+<option value="3200">HDFC BANK ₹3200</option>
+
+<option value="900">ITC ₹900</option>
+
+<option value="2100">ICICI BANK ₹2100</option>
+
+<option value="2800">HINDUNILVR ₹2800</option>
+
+<option value="750">WIPRO ₹750</option>
+
+<option value="650">TATA MOTORS ₹650</option>
+
+<option value="1800">BAJAJ FINANCE ₹1800</option>
+
+<option value="1100">SBIN ₹1100</option>
+
+<option value="4200">ASIAN PAINTS ₹4200</option>
+
+<option value="3600">LT ₹3600</option>
+
+</select>
+
+<input type="number" placeholder="Quantity" id="qty" oninput="calculateInjection()">
+
+<input type="number" placeholder="Commission %" id="commission" oninput="calculateInjection()">
+
+<div id="summary" class="summary">
+Fill details to see calculation
+</div>
+
+<button class="btn green" onclick="submitInjection()">Submit</button>
+
+<button class="btn red" onclick="closeInject()">Cancel</button>
+
+</div>
+</div>
+<div class="modal" id="actionModal">
+<div class="modalBox">
+<div id="modalContent"></div>
+</div>
+</div>
+
+<script>
+
+/* LOGIN */
+
+function login(){
+if(user.value==="admin" && pass.value==="admin123"){
+loginPage.style.display="none"
+adminPanel.style.display="block"
+}else{
+alert("Invalid Login")
+}
+}
+
+function logout(){location.reload()}
+
+/* USERS */
+
+let users=[
+{id:1,name:"Amit",balance:10000,online:true,credit:100,spin:false,withdrawTotal:0,realDeposit:0,helpDeposit:0},
+{id:2,name:"Raj",balance:8000,online:false,credit:100,spin:false,withdrawTotal:0,realDeposit:0,helpDeposit:0},
+{id:3,name:"Rohit",balance:15000,online:true,credit:100,spin:false,withdrawTotal:0,realDeposit:0,helpDeposit:0},
+{id:4,name:"Vikas",balance:6200,online:true,credit:100,spin:false,withdrawTotal:0,realDeposit:0,helpDeposit:0},
+{id:5,name:"Karan",balance:9500,online:false,credit:100,spin:false,withdrawTotal:0,realDeposit:0,helpDeposit:0},
+{id:6,name:"Arjun",balance:11000,online:true,credit:100,spin:false,withdrawTotal:0,realDeposit:0,helpDeposit:0},
+{id:7,name:"Sahil",balance:5000,online:false,credit:100,spin:false,withdrawTotal:0,realDeposit:0,helpDeposit:0},
+{id:8,name:"Dev",balance:7200,online:true,credit:100,spin:false,withdrawTotal:0,realDeposit:0,helpDeposit:0},
+{id:9,name:"Manish",balance:8400,online:true,credit:100,spin:false,withdrawTotal:0,realDeposit:0,helpDeposit:0},
+{id:10,name:"Aditya",balance:9200,online:false,credit:100,spin:false,withdrawTotal:0,realDeposit:0,helpDeposit:0}
+]
+
+let selectedUser=null
+
+/* RENDER USERS */
+
+function renderUsers(){
+
+memberTable.innerHTML=""
+
+users.forEach(u=>{
+
+memberTable.innerHTML+=`
+
+<tr>
+
+<td>${u.id}</td>
+<td>${u.name}</td>
+<td>₹${u.balance}</td>
+<td>₹${u.withdrawTotal}</td>
+<td>₹${u.realDeposit}</td>
+<td>₹${u.helpDeposit}</td>
+
+<td>
+<span class="status ${u.online?'online':'offline'}">
+${u.online?'Active':'Disabled'}
+</span>
+</td>
+
+<td>${u.credit}</td>
+
+<td>
+
+<button class="btn green" onclick="openInject(${u.id})">Inject</button>
+
+<button class="btn blue" onclick="depositMoney(${u.id})">Deposit</button>
+
+<button class="btn orange" onclick="withdrawMoney(${u.id})">Withdraw</button>
+
+<button class="btn gray" onclick="toggleUser(${u.id})">
+${u.online?'Disable':'Activate'}
+</button>
+
+<button class="btn purple" onclick="toggleSpin(${u.id})">
+${u.spin?'Spin ON':'Spin OFF'}
+</button>
+
+<button class="btn red" onclick="openAlert(${u.id})">Alert</button>
+
+<button class="btn blue" onclick="updateCredit(${u.id})">Credit</button>
+
+</td>
+
+</tr>
+
+`
+
+})
+
+}
+
+/* SEARCH */
+
+function searchUsers(){
+
+let q=searchInput.value.toLowerCase()
+
+memberTable.innerHTML=""
+
+users.filter(u=>u.name.toLowerCase().includes(q)||u.id.toString().includes(q))
+.forEach(u=>{
+
+memberTable.innerHTML+=`
+
+<tr>
+
+<td>${u.id}</td>
+<td>${u.name}</td>
+<td>₹${u.balance}</td>
+<td>₹${u.withdrawTotal}</td>
+<td>₹${u.realDeposit}</td>
+<td>₹${u.helpDeposit}</td>
+
+<td>
+<span class="status ${u.online?'online':'offline'}">
+${u.online?'Active':'Disabled'}
+</span>
+</td>
+
+<td>${u.credit}</td>
+
+<td>
+
+<button class="btn green" onclick="openInject(${u.id})">Inject</button>
+<button class="btn blue" onclick="depositMoney(${u.id})">Deposit</button>
+<button class="btn orange" onclick="withdrawMoney(${u.id})">Withdraw</button>
+
+</td>
+
+</tr>
+
+`
+
+})
+
+}
+
+function resetSearch(){
+searchInput.value=""
+renderUsers()
+}
+
+/* INJECT */
+
+/* INJECT */
+
+function openInject(id){
+
+selectedUser = users.find(u => u.id === id)
+
+document.getElementById("injectModal").style.display = "flex"
+
+calculateInjection()
+
+}
+
+function closeInject(){
+
+document.getElementById("injectModal").style.display = "none"
+
+}
+
+function calculateInjection(){
+
+let price = Number(document.getElementById("product").value)
+
+let q = Number(document.getElementById("qty").value || 0)
+
+let c = Number(document.getElementById("commission").value || 0)
+
+let base = price * q
+
+let com = base * (c/100)
+
+let total = base + com
+
+document.getElementById("summary").innerHTML = `
+Stock Price: ₹${price}<br>
+Quantity: ${q}<br>
+Base Amount: ₹${base}<br>
+Commission: ₹${com}<br>
+<b>Total Inject: ₹${total}</b>
+`
+
+}
+
+function submitInjection(){
+
+let price = Number(document.getElementById("product").value)
+
+let q = Number(document.getElementById("qty").value || 0)
+
+let c = Number(document.getElementById("commission").value || 0)
+
+let base = price * q
+
+let total = base + (base * (c/100))
+
+selectedUser.balance += total
+
+/* reset inputs */
+
+document.getElementById("qty").value=""
+document.getElementById("commission").value=""
+document.getElementById("summary").innerHTML="Fill details to see calculation"
+
+renderUsers()
+
+closeInject()
+
+}
+
+/* DEPOSIT */
+
+function depositMoney(id){
+
+selectedUser = users.find(u => u.id === id)
+
+modalContent.innerHTML = `
+
+<h3>Deposit</h3>
+
+<input type="number" id="depositAmount" placeholder="Enter Amount">
+
+<select id="depositType">
+
+<option value="real">Real Money</option>
+<option value="help">Help Money</option>
+
+</select>
+
+<button class="btn green" onclick="submitDeposit()">Submit</button>
+
+<button class="btn gray" onclick="closeModal()">Cancel</button>
+
+`
+
+actionModal.style.display="flex"
+
+}
+
+function submitDeposit(){
+
+let amount = Number(document.getElementById("depositAmount").value)
+
+let type = document.getElementById("depositType").value
+
+if(!amount || amount <= 0){
+alert("Enter valid amount")
+return
+}
+
+selectedUser.balance += amount
+
+if(type === "real"){
+selectedUser.realDeposit += amount
+}else{
+selectedUser.helpDeposit += amount
+}
+
+renderUsers()
+
+closeModal()
+
+}
+
+function approveDeposit(i){
+
+let req = depositRequests[i]
+
+let user = users.find(u=>u.id===req.userId)
+
+user.balance += req.amount
+
+if(req.type === "real"){
+user.realDeposit += req.amount
+}else{
+user.helpDeposit += req.amount
+}
+
+depositRequests.splice(i,1)
+
+renderUsers()
+
+closeModal()
+
+}
+
+function rejectDeposit(i){
+
+depositRequests.splice(i,1)
+
+renderUsers()
+
+closeModal()
+
+}
+
+/* WITHDRAW */
+
+function withdrawMoney(id){
+
+selectedUser = users.find(u => u.id === id)
+
+modalContent.innerHTML = `
+
+<h3>Withdraw</h3>
+
+<input type="number" id="withdrawAmount" placeholder="Enter Amount">
+
+<button class="btn green" onclick="submitWithdraw()">Submit</button>
+
+<button class="btn gray" onclick="closeModal()">Cancel</button>
+
+`
+
+actionModal.style.display="flex"
+
+}
+
+function submitWithdraw(){
+
+let amount = Number(document.getElementById("withdrawAmount").value)
+
+if(!amount || amount <= 0){
+alert("Enter valid amount")
+return
+}
+
+if(amount > selectedUser.balance){
+alert("Insufficient Balance")
+return
+}
+
+selectedUser.balance -= amount
+
+selectedUser.withdrawTotal += amount
+
+renderUsers()
+
+closeModal()
+
+}
+
+let withdrawRequests = []
+function withdrawMoney(id){
+
+selectedUser = users.find(u=>u.id===id)
+
+let html = `<h3>Withdraw Requests</h3>`
+
+withdrawRequests
+.filter(r=>r.userId===id)
+.forEach((r,i)=>{
+
+html += `
+
+<div style="margin-bottom:10px">
+
+User ID: ${r.userId}<br>
+Amount: ₹${r.amount}<br>
+UPI: ${r.upi}<br>
+
+<button class="btn green" onclick="approveWithdraw(${i})">Accept</button>
+
+<button class="btn red" onclick="rejectWithdraw(${i})">Reject</button>
+
+<hr>
+
+</div>
+
+`
+})
+
+html += `<button class="btn gray" onclick="closeModal()">Close</button>`
+
+modalContent.innerHTML = html
+
+actionModal.style.display="flex"
+
+}
+
+function approveWithdraw(i){
+
+let req = withdrawRequests[i]
+
+let user = users.find(u=>u.id===req.userId)
+
+if(user.balance < req.amount){
+alert("Insufficient Balance")
+return
+}
+
+user.balance -= req.amount
+user.withdrawTotal += req.amount
+
+withdrawRequests.splice(i,1)
+
+renderUsers()
+
+closeModal()
+
+}
+
+function rejectWithdraw(i){
+
+withdrawRequests.splice(i,1)
+
+renderUsers()
+
+closeModal()
+
+}
+
+
+/* ALERT */
+
+function openAlert(id){
+
+selectedUser=users.find(u=>u.id===id)
+
+modalContent.innerHTML=`
+
+<h3>Send Alert</h3>
+
+<textarea id="alertMsg"></textarea>
+
+<button class="btn green" onclick="sendAlert()">Send</button>
+<button class="btn gray" onclick="closeModal()">Cancel</button>
+
+`
+
+actionModal.style.display="flex"
+
+}
+
+function sendAlert(){
+
+alert("Alert sent: "+document.getElementById("alertMsg").value)
+
+closeModal()
+
+}
+
+/* CREDIT */
+
+function updateCredit(id){
+
+selectedUser=users.find(u=>u.id===id)
+
+modalContent.innerHTML=`
+
+<h3>Update Credit Score</h3>
+
+<input type="number" id="creditScoreInput" placeholder="Enter Credit Score">
+
+<button class="btn green" onclick="submitCredit()">Update</button>
+
+<button class="btn gray" onclick="closeModal()">Cancel</button>
+
+`
+
+actionModal.style.display="flex"
+
+}
+
+function submitCredit(){
+
+let score = Number(document.getElementById("creditScoreInput").value)
+
+if(score < 0 || score > 100 || isNaN(score)){
+alert("Credit score must be between 0 and 100")
+return
+}
+
+selectedUser.credit = score
+
+renderUsers()
+
+closeModal()
+
+}
+
+
+
+/* USER TOGGLE */
+
+function toggleUser(id){
+
+let u=users.find(x=>x.id===id)
+
+u.online=!u.online
+
+renderUsers()
+
+}
+
+/* SPIN */
+
+function toggleSpin(id){
+
+let u=users.find(x=>x.id===id)
+
+u.spin=!u.spin
+
+renderUsers()
+
+}
+
+/* MODAL */
+
+function closeModal(){
+actionModal.style.display="none"
+}
+
+/* PAGE */
+
+function openPage(id){
+
+document.querySelectorAll(".page").forEach(p=>p.style.display="none")
+
+document.getElementById(id).style.display="block"
+
+}
+
+/* INIT */
+
+renderUsers()
+
+</script>
+
+</body>
+</html>
